@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PHP</title>
+<!---->
+<link rel="stylesheet" type="text/css" href="css/index.css">
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+</head>
+<body>
+    <div id="body">
+        <transition name="slide-fade">
+        <div id="login" class="center" v-if="login">
+            <el-row>
+                <el-col :span="12">
+                    <img src="imgs/banner.jpg" alt="单词助手" style="width: 200px; height: 200px">
+                </el-col>
+                <el-col :span="12" style="margin-top: 50px">
+                    <el-row><label>
+                        <em><span style="font-size: 35px;color: rgb(0, 183, 255)">欢迎</span>
+                            <span style="font-size: 22px;color:rgb(0, 255, 200)">来到</span>
+                            单词助手</em></label>
+                    </el-row>
+                    <el-row><label>Welcome to the word helper.</label></el-row>
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-form :model="userForm" status-icon ref="userForm" label-width="100px" class="demo-Form">
+                    <el-form-item label="用户名">
+                        <el-input v-model="userForm.name" prefix-icon="el-icon-user"></el-input>
+                    </el-form-item>
+                    <el-form-item label="密码">
+                        <el-input type="password" v-model="userForm.pwd" prefix-icon="el-icon-lock" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="验证码">
+                        <el-row >
+                            <el-col :span="14"><el-input v-model="userForm.checkcode" prefix-icon="el-icon-key"></el-input></el-col>
+                            <el-col :span="10">
+                                <el-tooltip effect="dark" content="点击刷新"  placement="right-start">
+                                    <label><img src="php/check.php" @click="refreshCode"></label>
+                                </el-tooltip>    
+                            </el-col>
+                        </el-row>
+                        
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="submitForm('userForm')">登录</el-button>
+                        
+                        <a href="#" style="margin-left: 180px;" @click="goSignup">注册？</a>
+                    </el-form-item>
+                </el-form>
+            </el-row>
+            
+        </div>
+        </transition>
+        <transition name="slide-fade">
+        <div id="signup" class="center" v-if="!login">
+            <el-row style="margin-left: 100px;">
+                <el-col :span="13" style="margin-top: 50px">
+                    <el-row>
+                        <label><em>
+                            <span style="font-size: 35px;color: rgb(0, 183, 255)">欢迎</span>
+                            <span style="font-size: 22px;color:rgb(0, 255, 200)">注册</span>单词助手</em></label>
+                    </el-row>
+                    <el-row><label>Welcome to register the word helper.</label></el-row>
+                </el-col>
+                <el-col :span="11">
+                        <img src="imgs/baobao.jpg" alt="单词助手" style="width: 200px; height: 200px">
+                </el-col>
+            </el-row>
+            <el-row>
+                <el-form :model="suserForm" status-icon ref="suserForm" label-width="100px" class="demo-Form">
+                    <el-form-item label="用户名">
+                        <el-input v-model="suserForm.name" prefix-icon="el-icon-user"></el-input>
+                    </el-form-item>
+                    <el-form-item label="密码">
+                        <el-input type="password" v-model="suserForm.pwd" prefix-icon="el-icon-lock" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="重复密码">
+                        <el-input type="password" v-model="suserForm.repwd" prefix-icon="el-icon-lock"></el-input>
+                        
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary"  @click="submitForm('suserForm')">注册</el-button>
+                        <a href="#" style="margin-left: 150px;" @click="goLogin"><i class="el-icon-back">返回登录</i></a>
+                    </el-form-item>
+                </el-form>
+            </el-row>
+            
+        </div>
+        </transition>
+    </div>
+    
+</body>
+<script type="text/javascript" src="js/index.js"></script>
+</html>

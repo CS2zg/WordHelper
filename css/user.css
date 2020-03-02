@@ -1,0 +1,32 @@
+html{
+    background-color: rgb(240, 240, 240);
+}
+#body{
+    width: 60%;
+    background-color: rgb(240, 240, 240);
+    margin: 0 auto;
+}
+.user{
+    height: 15%;
+    width: 100%;
+    padding: 10px;
+    background-color: #fff;
+}
+.username{
+    font-size: 20px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-weight: bold;
+    margin-top: 0px ;
+}
+.glossary{
+    width: 100%;
+    margin-top:30px; 
+    background-color: #fff;
+}
+.glossary-content{
+    margin: 10px;
+    padding: 10px;
+}
+.el-link{
+    margin: 5px;
+}

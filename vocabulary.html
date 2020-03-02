@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PHP</title>
+<!--
+<link rel="stylesheet" type="text/css" href="css/index.css">-->
+<link rel="stylesheet" type="text/css" href="css/vocabulary.css">
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+<script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script src="js/login_status.js"></script>
+</head>
+<body>
+<img id="banner" src="imgs/helper.png" alt="单词助手">
+<div id="body" >
+    <div >
+        <el-tabs type="border-card" v-model="activeName" @tab-click="handleClick" class="mian-tabs">
+            <el-tab-pane label="词汇列表" name="first">
+                <el-table :data="wordData" height="600" style="width: 100%">
+                    <el-table-column
+                        prop="word"
+                        label="单词"
+                        width="120">
+                    </el-table-column>
+                    <el-table-column
+                        prop="character"
+                        label="词性"
+                        width="80">
+                    </el-table-column>
+                    <el-table-column
+                        prop="interpretation"
+                        label="词义"
+                        width="150">
+                    </el-table-column>
+                    <el-table-column
+                        prop="pronunciation"
+                        label="发音"
+                        width="120">
+                    </el-table-column>
+                    <el-table-column
+                        prop="difficulty"
+                        label="难度"
+                        width="50">
+                    </el-table-column>
+                    <el-table-column
+                        prop="eng_expl"
+                        label="英文例句"
+                        width="250">
+                    </el-table-column>
+                    <el-table-column
+                        prop="chs_expl"
+                        label="中文例句"
+                        width="250">
+                    </el-table-column>
+                    <!--自定义列失效，暂待-->
+                    <el-table-column label="操作" width="130">
+                        <template slot-scope="scope">
+                            <el-button size="mini" type="primary" icon="el-icon-edit" circle @click="handleEdit(scope.$index, scope.row)"></el-button>
+                            
+                            <el-button size="mini" type="danger" icon="el-icon-delete" circle @click="handleDelete(scope.$index, scope.row)"></el-button>
+                        </template>   
+                    </el-table-column>                       
+                </el-table>
+            </el-tab-pane>
+            <el-tab-pane label="文献列表" name="second">
+                <el-row :gutter="10">
+                    <el-col :span="4">
+                        <el-menu
+                            default-active="2"
+                            class="el-menu-vertical-demo"
+                            @select="handleSelect">
+                            <el-menu-item v-for="e in essayList" v-bind:index=e.id>
+                                <i class="el-icon-document"></i> 
+                                <span slot="title" >{{e.title}}</span>
+                            </el-menu-item>
+                        </el-menu>
+                    </el-col>
+                    <el-col :span="20">
+                        <!--html字符不能用{{}}，需要用v-html，<br>生效了-->
+                        <!--<p v-html=essayData[0].content></p>-->
+                        <!--标题居中？{{essayData}}
+                        <h3>{{essayData.title}}</h3>.content-->
+                        <p class="essay-content" v-loading="loading" v-html=essayData></p>
+                    </el-col>
+                </el-row>
+            </el-tab-pane>
+            <el-tab-pane label="录入词汇" name="thrid">
+                <!--el-row 24等分-->
+                <el-row :gutter="20" style="width: 100%">        
+                    <el-form ref="form" :model="form" label-width="80px">
+                        <el-row>
+                            <el-col :span=12>
+                                <el-form-item label="单词" >
+                                <!---->
+                                <el-input v-model="form.word" @blur="checkForm(1)" ></el-input>
+                                <label v-if="isError.word" class="error">*请输入正确的单词</label>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span=12>
+                                <el-form-item label="词性">
+                                    <el-select v-model="form.character" placeholder="名词" @blur="checkForm(2)">
+                                        <el-option v-for="s in selects_cha" v-bind:label="s.label" v-bind:value="s.value"></el-option>                    
+                                    </el-select>
+                                    <label v-if="isError.character" class="error">*请选择词性</label>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="词义">
+                                    <el-input type="textarea" v-model="form.interpretation"></el-input>
+                                    <!--词义解释涉及到很多字符，暂不检查-->
+                                </el-form-item>     
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="音标">
+                                    <el-input v-model="form.pronounciation" @blur="checkForm(4)"></el-input>
+                                    <label v-if="isError.pronounciation" class="error">*请输入正确音标</label>
+                                </el-form-item>       
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="难度">
+                                    <el-radio-group v-model="form.difficulty" @blur="checkForm(5)">
+                                        <el-radio label="1" ></el-radio>
+                                        <el-radio label="2" ></el-radio>
+                                        <el-radio label="3" ></el-radio>
+                                        <el-radio label="4" ></el-radio>
+                                        <el-radio label="5" ></el-radio>
+                                    </el-radio-group>
+                                    <label v-if="isError.difficulty" class="error">*请选择难度</label>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">                   
+                                <!--上传图片已完成,可以设置为自动上传@change="uploadFile"-->
+                                <el-form-item label="插图">
+                                    <!--input file 是只读的，不能双向绑定数据v-model="form.picture"-->
+                                    <input type="file" id="uploadPic" >
+                                    <i class="el-icon-upload" style="color: aquamarine;font: size 15;">（只能上传png、jpg且小于1M的图片）</i>
+                                </el-form-item>    
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="英文例句" style="height: 100px;" >
+                                    <el-input type="textarea" v-model="form.eng_expl" @blur="checkForm(6)"></el-input>
+                                    <label v-if="isError.eng_expl" class="error">*请输入正确英文例句</label>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="中文例句" prefix-icon="el-icon-s-flag">
+                                    <el-input type="textarea" v-model="form.chs_expl" @blur="checkForm(7)"></el-input>
+                                    <label v-if="isError.chs_expl" class="error">*请输入正确中文例句</label>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row style="margin-top: 30px">
+                            <el-col>
+                                <el-form-item >
+                                <el-button type="primary"  @click="onSubmit">添加</el-button>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form> 
+                </el-row>  
+            </el-tab-pane>
+            <el-tab-pane label="录入文献" name="fourth">
+                <el-row>
+                    <el-col :span="18">
+                        <div id="upload_essay" class="upload_essay">
+                            <form action="php/input_essay.php" method="post" enctype="multipart/form-data" id="uploadEssay" name="uploadEssay" >
+                                <h3>请选择要上传的文件：</h3>
+                                <p>
+                                    <i class="el-icon-upload2" style="color: aquamarine"></i>
+                                    <input name="essay[]" type="file" id="essay1" size="30">
+                                    <el-divider></el-divider>
+                                </p>
+                                <p>
+                                    <i class="el-icon-upload2" style="color: aquamarine"></i>
+                                    <input name="essay[]" type="file" id="essay2" size="30">
+                                    <el-divider></el-divider>
+                                </p>
+                                <p>
+                                    <i class="el-icon-upload2" style="color: aquamarine"></i>
+                                    <input name="essay[]" type="file" id="essay3" size="30">
+                                    <el-divider></el-divider>
+                                </p>
+                                <p>
+                                    <i class="el-icon-upload2" style="color: aquamarine"></i>
+                                    <input name="essay[]" type="file" id="essay4" size="30">
+                                    <el-divider></el-divider>
+                                </p>
+                                <p>
+                                    <!--<input type="submit" value="提交">-->
+                                    <el-button type="primary" @click="submitUpload">上传<i class="el-icon-upload el-icon--right"></i></el-button>
+                                </p>
+                            </form>
+                        </div>
+                    </el-col>
+                    <el-col :span="6">
+                        <div class="tips">
+                            <el-collapse style="margin-top: 100px;">
+                                <el-collapse-item title="tips" name="1" >
+                                    <ul>
+                                        <li>上传的文件必须是txt文件</li>
+                                        <li>上传前请保持文献名于文件名一致</li>
+                                        <li>上传的文件可以小于等于4，系统不会把空文件计算在内。</li>
+                                    </ul>                               
+                                </el-collapse-item>
+                            </el-collapse>
+                        </div>
+                    </el-col>
+                </el-row> 
+            </el-tab-pane>
+        </el-tabs>
+    </div>    
+    <div class="update" v-if="isUpdated" style="width: 500px;">
+            <el-form ref="updateWord" :model="updateWord" label-width="80px">
+                <el-form-item label="单词" >
+                    <!---->
+                    <el-input v-model="updateWord.word" @blur="checkUForm(1)" disabled></el-input>
+                    <label v-if="isError.word" class="error">*请输入正确的单词</label>
+                </el-form-item>
+                <el-form-item label="词性">
+                    <el-select v-model="updateWord.character" placeholder="名词" @blur="checkUForm(2)" disabled>
+                        <el-option v-for="s in selects_cha" v-bind:label="s.label" v-bind:value="s.value"></el-option>                    
+                    </el-select>
+                    <label v-if="isError.character" class="error">*请选择词性</label>
+                </el-form-item>
+                <el-form-item label="词义">
+                    <el-input type="textarea" v-model="updateWord.interpretation"></el-input>
+                    <!--词义解释涉及到很多字符，暂不检查-->
+                </el-form-item>
+                <el-form-item label="音标">
+                    <el-input v-model="updateWord.pronunciation" @blur="checkUForm(4)"></el-input>
+                    <label v-if="isError.pronounciation" class="error">*请输入正确音标</label>
+                </el-form-item>
+                <el-form-item label="难度">
+                    <el-radio-group v-model="updateWord.difficulty" @blur="checkUForm(5)">
+                        <el-radio label="1" ></el-radio>
+                        <el-radio label="2" ></el-radio>
+                        <el-radio label="3" ></el-radio>
+                        <el-radio label="4" ></el-radio>
+                        <el-radio label="5" ></el-radio>
+                    </el-radio-group>
+                    <label v-if="isError.difficulty" class="error">*请选择难度</label>
+                </el-form-item>
+                <el-form-item label="插图">
+                    <e-row :gutter=5>
+                        <el-col :span="8">
+                            <el-avatar shape="square" :size="70" :src="updateWord.picture"></el-avatar>     
+                        </el-col>
+                        <el-col :span="16">
+                            <!--input file 是只读的，不能双向绑定数据v-model="form.picture"-->
+                            <input type="file" id="updatePic" >
+                            <i class="el-icon-upload" style="color: rgb(127, 229, 255);font-size:10px;">（只能上传png、jpg且小于1M的图片）</i>
+                        </el-col>
+                    </e-row>         
+                </el-form-item>  
+                <el-form-item label="英文例句" style="height: 100px;" >
+                    <el-input type="textarea" v-model="updateWord.eng_expl" @blur="checkUForm(6)"></el-input>
+                    <label v-if="isError.eng_expl" class="error">*请输入正确英文例句</label>
+                </el-form-item>
+                <el-form-item label="中文例句" prefix-icon="el-icon-s-flag">
+                    <el-input type="textarea" v-model="updateWord.chs_expl" @blur="checkUForm(7)"></el-input>
+                    <label v-if="isError.chs_expl" class="error">*请输入正确中文例句</label>
+                </el-form-item>
+                <el-form-item >
+                    <el-button type="primary"  @click="onUpdate">提交修改</el-button>
+                    <el-button @click="cancelUpdate">取消</el-button>
+                </el-form-item>
+            </el-form>
+    </div>
+</div>
+
+</body>
+<script src="js/vocabulary.js"></script>
+</html>

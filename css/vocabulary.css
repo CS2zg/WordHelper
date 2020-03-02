@@ -1,0 +1,73 @@
+
+#body{
+    width: 82%;
+    margin: 0 auto;
+    
+}
+#banner{
+    width: 200px;
+    height: 200px;
+    position: fixed;
+    margin-right: 110px;
+    top: 0;
+    right:0 ;
+    z-index: 20;
+}
+.update{
+    position: fixed;
+    top:0px;
+    left: 30%;
+    z-index: 70;
+    width: 300px;
+    margin: 0 auto;
+    background-color: aliceblue;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+    padding: 30px;
+}
+h3{
+    text-align: center;
+}
+li{
+    color: chartreuse;
+}
+.child_tabs{
+    height: 750px;
+}
+.mian-tabs{
+    
+    margin: 20px;
+}
+.error{
+    font-size: 12px;
+    color: red;
+  }
+.small-button{
+    font-size: 15px;
+    width: 30px;
+    height: 18px;
+}
+.expl{
+    height: 50px;
+}
+.inputfile {
+    width: 0.1px; 
+    height: 0.1px; 
+    opacity: 0; 
+    overflow: hidden; 
+    position: absolute; 
+    z-index: -1;
+}
+.essay-content{
+    height: 600px;
+    overflow:scroll;
+}
+.upload_essay{
+    width: 50%;
+    height: 500px;
+    margin:0 auto;
+}
+.tips{
+    width: 80%;
+    padding:20px;
+    margin:0 auto;
+}

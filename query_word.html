@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>查单词</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+        <!-- 引入样式 -->
+        <link rel="stylesheet" href="css/query_word.css">
+        <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+        <!-- 引入组件库 -->
+        <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+        
+    </head>
+    <body>
+        <div id="body">
+        <div id="top">
+            <el-row :gutter="10" style="margin-top: 20px;">
+                <!--<el-col :span="6"><div class="grid-content bg-purple"></div></el-col>-->
+                <el-col :span="3" :offset="4"><div id="brand"><span class="brand-left">单词</span><span class="brand-right">助手</span></div></el-col>
+                <el-col :span="9" class="top-some-col">
+                    <el-input  v-model="q_word" @blur="checkWord" class="input-with-select" placeholder="i want to find somethig...">
+                        <el-select v-model="type" slot="prepend" placeholder="英-中">
+                            <el-option label="英-中" value="1"></el-option>
+                            <el-option label="中-英" value="2"></el-option>
+                        </el-select>
+                    </el-input>
+                </el-col>
+                <el-col :span="2" class="top-some-col"><el-button icon="el-icon-search" @click=queryWord(1)>精准查询</el-button></el-col>
+                <el-col :span="3" class="top-some-col"><el-button icon="el-icon-search" @click=queryWord(2)>模糊查询</el-button></el-col>
+                <el-col :span="3">
+                    
+                </el-col>
+            </el-row>
+            <!--分界线v-if='queried'--><el-divider style="margin: 20px;"></el-divider>
+        </div>
+        
+        
+        <div id="left">
+            
+            <img src="imgs/q_bg.jpg" v-if="queried==0">
+            
+            
+            <!--精确查询的结果-->
+            <div class="word-detail" v-if="queried==1">
+                <el-row>
+                    <el-col :span="16">
+                        <p >{{words[0].word}}
+                            <el-tooltip class="item" effect="light" content="加入生词本" placement="top-start">
+                                <i class="el-icon-document-copy small-icon" @click="inputGlossary(words[0].word)"></i>
+                            </el-tooltip>
+                        </p>
+                        <p >英&nbsp;<span style="font-size: 16px; color:darkgrey">[{{words[0].pronunciation }}]</span><i class="el-icon-microphone small-icon"></i></p>
+                        <p v-for="w in words">{{w.character}}&nbsp;{{w.interpretation}}</p><!-- -->
+                    </el-col>
+                    <el-col :span="8">
+                        <img v-bind:src="words[0].picture" v-if="words[0].picture!=''" alt="插图" style="width: 200px; height: 200px">
+                    </el-col>
+                </el-row>                    
+                <el-divider content-position="left" >例句：</el-divider>
+                <p v-for="w in words" v-if="w.eng_expl!='null'">{{w.eng_expl}}<br>{{w.chs_expl}}</p> 
+            </div>
+            <div v-if="queried==2">
+                <p>共找到以下{{words.length}}个词：</p>
+                <el-collapse >
+                    <el-collapse-item v-for="w in words" v-bind:title="w.word">
+                            <el-row>
+                                <el-col :span=14>
+                                    <p >英&nbsp;
+                                        <span style="font-size: 16px; color:darkgrey">[{{w.attr[0].pronunciation }}]</span>
+                                        <i class="el-icon-microphone small-icon"></i>
+                                    </p>
+                                    <p v-for="cha in w.attr">{{cha.character}}&nbsp;{{cha.interpretation}}</p>
+                                    
+                                </el-col>
+                                <el-col :span=10>
+                                    <img v-bind:src="w.attr[0].picture" alt="插图" style="width: 100px; height: 100px">
+                                </el-col>
+                            </el-row>
+                            <el-divider content-position="left" >例句：</el-divider>
+                            <p v-for="expl in w.attr" v-if="expl.eng_expl!='null'">{{expl.eng_expl}}<br>{{expl.chs_expl}}</p> 
+
+                    </el-collapse-item>
+                </el-collapse>
+            </div>
+        </div>
+        <div id="right">
+                <div id="r-b" style="text-align: center;width: 100%;">
+                        <el-dropdown>
+                            <el-avatar :size="75" src="imgs/head.jpg"></el-avatar><br>
+                            <label style="color: rgb(0, 183, 255)">{{user.name}}</label>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item><i class="el-icon-s-help" @click="goUser">个人</i></el-dropdown-item>
+                                <el-dropdown-item><i class="el-icon-s-open" @click="logOut">退出登录</i></el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    
+                    </div>
+            <!-- <div id="tab-item" v-for="tab of tabs" @mouseenter="getBlue" @mouseleave="getBlack">
+                    <el-tooltip class="item" effect="dark" content="登录后可操作" placement="top-start">
+                    <div style="margin: 0; padding:0" @click="tab.event">
+                        <i v-bind:class="tab.style"  style="font-size: 32px;"></i><br>
+                    <span>{{tab.text}}</span>
+                    </div>
+                    </el-tooltip>
+                </div> -->
+            <div id="tab-item"  @mouseenter="getBlue" @mouseleave="getBlack">
+                    <el-tooltip class="item" effect="dark" content="操作词汇" placement="top-start">
+                    <div style="margin: 0; padding:0" @click="goVocabulary">
+                        <i class="el-icon-reading"  style="font-size: 32px;"></i><br>
+                    <span>词汇</span>
+                    </div>
+                    </el-tooltip>
+            </div>
+            <div id="tab-item"  @mouseenter="getBlue" @mouseleave="getBlack">
+                    <el-tooltip class="item" effect="dark" content="操作TXT" placement="top-start">
+                    <div style="margin: 0; padding:0" @click="goVocabulary">
+                        <i class="el-icon-document-copy"  style="font-size: 32px;"></i><br>
+                    <span>文献</span>
+                    </div>
+                    </el-tooltip>
+            </div>
+            <div id="tab-item"  @mouseenter="getBlue" @mouseleave="getBlack">
+                    <el-tooltip class="item" effect="dark" content="查看生词本" placement="top-start">
+                    <div style="margin: 0; padding:0" @click="goUser">
+                        <i class="el-icon-document"  style="font-size: 32px;"></i><br>
+                    <span>生词</span>
+                    </div>
+                    </el-tooltip>
+            </div>
+        </div>
+        
+        </div>
+    </body>
+    <script src="js/query_word.js"></script>
+</html>
